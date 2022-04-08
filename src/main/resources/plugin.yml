@@ -1,0 +1,9 @@
+name: LightUp
+version: '${project.version}'
+main: com.loohp.lightup.LightUp
+api-version: 1.18
+authors: [LOOHP]
+description: Light up your surroundings!
+depend: [CommandAPI]
+softdepend:
+  - CoreProtect

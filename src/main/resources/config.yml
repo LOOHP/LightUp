@@ -1,0 +1,16 @@
+Messages:
+  Reload: "&aLightUp has been reloaded!"
+  OnlyPlayerCommand: "&cThis command can only be executed by a player"
+  NoActiveTask: "&eThere is no active light up tasks"
+  NothingToUndo: "&cThere is nothing to undo"
+  WaitComplete: "&ePlease wait while your current light up task to complete or cancelled!"
+  LightUpBegin: "&7Please wait while we light up your surroundings!"
+  LightUpComplete: "&aSuccessfully lid up &b{TotalBlocks} &ablocks with &e{TotalPlaced} &alight sources placed!"
+  LightUpCancelled: "&cLight up task cancelled"
+  UndoUnloadedWorld: "&cUndo cancelled! Destination world is not loaded!"
+  UndoComplete: "&dLast light up task had been undone, reverted {BlocksUndone} light sources!"
+
+Options:
+  ProgressActionBar:
+    Enabled: true
+    Formatting: "&eLightUp Task: &a{ScannedBlocks}&b/{TotalBlocks} {CompletedPercentage}% &e({PlacedLights} lights placed)"
