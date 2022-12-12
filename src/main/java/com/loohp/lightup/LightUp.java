@@ -59,6 +59,7 @@ public class LightUp extends JavaPlugin implements Listener {
 
     public boolean progressActionBarEnabled;
     public String progressActionBarFormatting;
+    public int maxBlocksPerTick;
 
     @Override
     public void onEnable() {
@@ -105,6 +106,7 @@ public class LightUp extends JavaPlugin implements Listener {
         messageUndoUnloadedWorld = ChatColor.translateAlternateColorCodes('&', getConfig().getString("Messages.UndoUnloadedWorld"));
         messageUndoComplete = ChatColor.translateAlternateColorCodes('&', getConfig().getString("Messages.UndoComplete"));
 
+        maxBlocksPerTick = getConfig().getInt("Options.MaxBlocksPerTick");
         progressActionBarEnabled = getConfig().getBoolean("Options.ProgressActionBar.Enabled");
         progressActionBarFormatting = ChatColor.translateAlternateColorCodes('&', getConfig().getString("Options.ProgressActionBar.Formatting"));
     }
@@ -193,13 +195,16 @@ public class LightUp extends JavaPlugin implements Listener {
                 List<Location> placementRecord = new LinkedList<>();
                 playerUndo.get(player.getUniqueId()).add(placementRecord);
                 do {
-                    CompletableFuture<Block> future = new CompletableFuture<>();
+                    CompletableFuture<ContinueLightUpResult> future = new CompletableFuture<>();
                     getServer().getScheduler().runTaskLater(this, () -> future.complete(continueLightUp(player, blocks, blockData, minimumLightLevel, includeSkylight, type)), 1);
-                    Block block = future.get();
-                    continueQueue = block != null;
+                    ContinueLightUpResult result = future.get();
+                    continueQueue = !result.isFinished();
                     if (continueQueue) {
-                        placementRecord.add(block.getLocation());
-                        totalPlaced++;
+                        Block block = result.getBlock();
+                        if (block != null) {
+                            totalPlaced++;
+                            placementRecord.add(block.getLocation());
+                        }
                         if (progressActionBarEnabled) {
                             int percentage = Math.round((1F - ((float) blocks.size() / (float) totalBlocks)) * 100F);
                             String format = progressActionBarFormatting.replace("{ScannedBlocks}", "" + (totalBlocks - blocks.size())).replace("{TotalBlocks}", "" + totalBlocks).replace("{PlacedLights}", "" + totalPlaced).replace("{CompletedPercentage}", "" + percentage);
@@ -234,9 +239,13 @@ public class LightUp extends JavaPlugin implements Listener {
         return blocks;
     }
 
-    public Block continueLightUp(Player player, Queue<Block> blocks, BlockData blockData, int minLightLevel, boolean includeSkylight, LightUpType type) {
+    public ContinueLightUpResult continueLightUp(Player player, Queue<Block> blocks, BlockData blockData, int minLightLevel, boolean includeSkylight, LightUpType type) {
         Block block;
+        int count = 0;
         while ((block = blocks.poll()) != null) {
+            if (++count > maxBlocksPerTick) {
+                return new ContinueLightUpResult(null, false);
+            }
             Material down = block.getRelative(BlockFace.DOWN).getType();
             boolean validType = type.equals(LightUpType.ALL) || type.equals(LightUpType.SURFACE) && hasSkyAccess(block, 0) || type.equals(LightUpType.CAVE) && !hasSkyAccess(block, 7);
             if (down.isSolid() && down.isOccluding() && !down.equals(Material.BEDROCK) && block.getType().isAir() && validType) {
@@ -245,19 +254,19 @@ public class LightUp extends JavaPlugin implements Listener {
                         BlockData placedBlockData = blockData.clone();
                         block.setBlockData(placedBlockData);
                         CoreProtectHook.logPlacement(player.getName(), block.getLocation(), placedBlockData.getMaterial(), placedBlockData);
-                        return block;
+                        return new ContinueLightUpResult(block, false);
                     }
                 } else {
                     if (block.getLightFromBlocks() < minLightLevel) {
                         BlockData placedBlockData = blockData.clone();
                         block.setBlockData(placedBlockData);
                         CoreProtectHook.logPlacement(player.getName(), block.getLocation(), placedBlockData.getMaterial(), placedBlockData);
-                        return block;
+                        return new ContinueLightUpResult(block, false);
                     }
                 }
             }
         }
-        return null;
+        return new ContinueLightUpResult(null, true);
     }
 
     public boolean hasSkyAccess(Block block, int minLight) {
@@ -284,6 +293,25 @@ public class LightUp extends JavaPlugin implements Listener {
             }
             player.sendMessage(messageUndoComplete.replace("{BlocksUndone}", "" + locations.size()));
         });
+    }
+
+    public static class ContinueLightUpResult {
+
+        private final Block block;
+        private final boolean finished;
+
+        public ContinueLightUpResult(Block block, boolean finished) {
+            this.block = block;
+            this.finished = finished;
+        }
+
+        public Block getBlock() {
+            return block;
+        }
+
+        public boolean isFinished() {
+            return finished;
+        }
     }
 
 }

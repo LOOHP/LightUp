@@ -11,6 +11,7 @@ Messages:
   UndoComplete: "&dLast light up task had been undone, reverted {BlocksUndone} light sources!"
 
 Options:
+  MaxBlocksPerTick: 4000
   ProgressActionBar:
     Enabled: true
     Formatting: "&eLightUp Task: &a{ScannedBlocks}&b/{TotalBlocks} {CompletedPercentage}% &e({PlacedLights} lights placed)"
