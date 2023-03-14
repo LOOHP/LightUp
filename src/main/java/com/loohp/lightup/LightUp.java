@@ -3,9 +3,11 @@ package com.loohp.lightup;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.loohp.lightup.hooks.CoreProtectHook;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.BlockStateArgument;
 import dev.jorel.commandapi.arguments.BooleanArgument;
 import dev.jorel.commandapi.arguments.IntegerArgument;
+import dev.jorel.commandapi.arguments.SafeSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -155,10 +157,10 @@ public class LightUp extends JavaPlugin implements Listener {
             .withPermission("lightup.use")
             .withArguments(
                 new BlockStateArgument("block"),
-                new IntegerArgument("min_light_level", 0, 15).replaceWithSafeSuggestions(info -> IntStream.range(0, 16).boxed().toArray(Integer[]::new)),
-                new IntegerArgument("range", 0).includeWithSafeSuggestions(info -> new Integer[] {50}),
+                new IntegerArgument("min_light_level", 0, 15).replaceSafeSuggestions(SafeSuggestions.suggest(IntStream.range(0, 16).boxed().toArray(Integer[]::new))),
+                new IntegerArgument("range", 0).includeSafeSuggestions(SafeSuggestions.suggest(50)),
                 new BooleanArgument("include_skylight"),
-                new StringArgument("lightup_type").replaceSuggestions(info -> Arrays.stream(LightUpType.values()).map(each -> each.name().toLowerCase()).toArray(String[]::new)))
+                new StringArgument("lightup_type").includeSuggestions(ArgumentSuggestions.strings(Arrays.stream(LightUpType.values()).map(each -> each.name().toLowerCase()).toArray(String[]::new))))
             .executes((sender, args) -> {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
