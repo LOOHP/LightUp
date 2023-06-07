@@ -164,13 +164,13 @@ public class LightUp extends JavaPlugin implements Listener {
             .executes((sender, args) -> {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
-                    BlockData blockData = (BlockData) args[0];
-                    int minLightLevel = (int) args[1];
-                    int distanceMax = (int) args[2];
-                    boolean includeSkylight = (boolean) args[3];
+                    BlockData blockData = (BlockData) args.get(0);
+                    int minLightLevel = (int) args.get(1);
+                    int distanceMax = (int) args.get(2);
+                    boolean includeSkylight = (boolean) args.get(3);
                     LightUpType type;
                     try {
-                        type = LightUpType.valueOf(((String) args[4]).toUpperCase());
+                        type = LightUpType.valueOf(((String) args.get(4)).toUpperCase());
                     } catch (IllegalArgumentException e) {
                         type = LightUpType.ALL;
                     }
@@ -209,16 +209,16 @@ public class LightUp extends JavaPlugin implements Listener {
                         }
                         if (progressActionBarEnabled) {
                             int percentage = Math.round((1F - ((float) blocks.size() / (float) totalBlocks)) * 100F);
-                            String format = progressActionBarFormatting.replace("{ScannedBlocks}", "" + (totalBlocks - blocks.size())).replace("{TotalBlocks}", "" + totalBlocks).replace("{PlacedLights}", "" + totalPlaced).replace("{CompletedPercentage}", "" + percentage);
+                            String format = progressActionBarFormatting.replace("{ScannedBlocks}", String.valueOf(totalBlocks - blocks.size())).replace("{TotalBlocks}", String.valueOf(totalBlocks)).replace("{PlacedLights}", String.valueOf(totalPlaced)).replace("{CompletedPercentage}", String.valueOf(percentage));
                             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(format));
                         }
                     }
                 } while (continueQueue);
                 if (progressActionBarEnabled) {
-                    String format = progressActionBarFormatting.replace("{ScannedBlocks}", "" + totalBlocks).replace("{TotalBlocks}", "" + totalBlocks).replace("{PlacedLights}", "" + totalPlaced).replace("{CompletedPercentage}", "100");
+                    String format = progressActionBarFormatting.replace("{ScannedBlocks}", String.valueOf(totalBlocks)).replace("{TotalBlocks}", String.valueOf(totalBlocks)).replace("{PlacedLights}", String.valueOf(totalPlaced)).replace("{CompletedPercentage}", "100");
                     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(format));
                 }
-                player.sendMessage(messageLightUpComplete.replace("{TotalBlocks}", "" + totalBlocks).replace("{TotalPlaced}", "" + totalPlaced));
+                player.sendMessage(messageLightUpComplete.replace("{TotalBlocks}", String.valueOf(totalBlocks)).replace("{TotalPlaced}", String.valueOf(totalPlaced)));
             } catch (InterruptedException | ExecutionException e) {
                 player.sendMessage(messageLightUpCancelled);
             }
@@ -293,7 +293,7 @@ public class LightUp extends JavaPlugin implements Listener {
                 CoreProtectHook.logRemoval(player.getName(), block.getLocation(), block.getType(), block.getBlockData());
                 block.setType(Material.AIR);
             }
-            player.sendMessage(messageUndoComplete.replace("{BlocksUndone}", "" + locations.size()));
+            player.sendMessage(messageUndoComplete.replace("{BlocksUndone}", String.valueOf(locations.size())));
         });
     }
 
