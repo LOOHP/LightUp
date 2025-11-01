@@ -18,6 +18,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -164,7 +165,7 @@ public class LightUp extends JavaPlugin implements Listener {
             .executes((sender, args) -> {
                 if (sender instanceof Player) {
                     Player player = (Player) sender;
-                    BlockData blockData = (BlockData) args.get(0);
+                    BlockState blockState = (BlockState) args.get(0);
                     int minLightLevel = (int) args.get(1);
                     int distanceMax = (int) args.get(2);
                     boolean includeSkylight = (boolean) args.get(3);
@@ -174,14 +175,14 @@ public class LightUp extends JavaPlugin implements Listener {
                     } catch (IllegalArgumentException e) {
                         type = LightUpType.ALL;
                     }
-                    lightUp(player, blockData, player.getLocation(), minLightLevel, distanceMax, includeSkylight, type);
+                    lightUp(player, blockState, player.getLocation(), minLightLevel, distanceMax, includeSkylight, type);
                 } else {
                     sender.sendMessage(messageOnlyPlayerCommand);
                 }
             }).register();
     }
 
-    public void lightUp(Player player, BlockData blockData, Location origin, int minLightLevel, int distanceMax, boolean includeSkylight, LightUpType type) {
+    public void lightUp(Player player, BlockState blockState, Location origin, int minLightLevel, int distanceMax, boolean includeSkylight, LightUpType type) {
         if (playerTask.get(player.getUniqueId()) != null) {
             player.sendMessage(messageWaitComplete);
             return;
@@ -198,7 +199,7 @@ public class LightUp extends JavaPlugin implements Listener {
                 playerUndo.get(player.getUniqueId()).add(placementRecord);
                 do {
                     CompletableFuture<ContinueLightUpResult> future = new CompletableFuture<>();
-                    getServer().getScheduler().runTaskLater(this, () -> future.complete(continueLightUp(player, blocks, blockData, minimumLightLevel, includeSkylight, type)), 1);
+                    getServer().getScheduler().runTaskLater(this, () -> future.complete(continueLightUp(player, blocks, blockState, minimumLightLevel, includeSkylight, type)), 1);
                     ContinueLightUpResult result = future.get();
                     continueQueue = !result.isFinished();
                     if (continueQueue) {
@@ -241,7 +242,7 @@ public class LightUp extends JavaPlugin implements Listener {
         return blocks;
     }
 
-    public ContinueLightUpResult continueLightUp(Player player, Queue<Block> blocks, BlockData blockData, int minLightLevel, boolean includeSkylight, LightUpType type) {
+    public ContinueLightUpResult continueLightUp(Player player, Queue<Block> blocks, BlockState blockState, int minLightLevel, boolean includeSkylight, LightUpType type) {
         Block block;
         int count = 0;
         while ((block = blocks.poll()) != null) {
@@ -253,14 +254,14 @@ public class LightUp extends JavaPlugin implements Listener {
             if (down.isSolid() && down.isOccluding() && !down.equals(Material.BEDROCK) && block.getType().isAir() && validType) {
                 if (includeSkylight) {
                     if (block.getLightLevel() < minLightLevel) {
-                        BlockData placedBlockData = blockData.clone();
+                        BlockData placedBlockData = blockState.getBlockData();
                         block.setBlockData(placedBlockData);
                         CoreProtectHook.logPlacement(player.getName(), block.getLocation(), placedBlockData.getMaterial(), placedBlockData);
                         return new ContinueLightUpResult(block, false);
                     }
                 } else {
                     if (block.getLightFromBlocks() < minLightLevel) {
-                        BlockData placedBlockData = blockData.clone();
+                        BlockData placedBlockData = blockState.getBlockData();
                         block.setBlockData(placedBlockData);
                         CoreProtectHook.logPlacement(player.getName(), block.getLocation(), placedBlockData.getMaterial(), placedBlockData);
                         return new ContinueLightUpResult(block, false);

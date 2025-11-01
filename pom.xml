@@ -6,7 +6,7 @@
 
     <groupId>com.loohp</groupId>
     <artifactId>LightUp</artifactId>
-    <version>1.1.5.0</version>
+    <version>1.1.6.0</version>
     <packaging>jar</packaging>
 
     <name>LightUp</name>
@@ -76,13 +76,13 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.21.3-R0.1-SNAPSHOT</version>
+            <version>1.21.10-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>dev.jorel</groupId>
-            <artifactId>commandapi-bukkit-plugin</artifactId>
-            <version>9.6.1</version>
+            <artifactId>commandapi-paper-core</artifactId>
+            <version>11.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
